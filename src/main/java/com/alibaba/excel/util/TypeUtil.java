@@ -9,6 +9,10 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,6 +75,30 @@ public class TypeUtil {
             if (Long.class.equals(field.getType()) || long.class.equals(field.getType())) {
                 return Long.parseLong(value);
             }
+            if (LocalDateTime.class.equals(field.getType())) {
+                if (value.contains("-") || value.contains("/") || value.contains(":")) {
+                    return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(format));
+                } else {
+                    Double d = Double.parseDouble(value);
+                    Date date = HSSFDateUtil.getJavaDate(d, us);
+                    if (date == null) {
+                        return null;
+                    }
+                    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+                }
+            }
+            if (LocalDate.class.equals(field.getType())) {
+                if (value.contains("-") || value.contains("/") || value.contains(":")) {
+                    return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(format));
+                } else {
+                    Double d = Double.parseDouble(value);
+                    Date date = HSSFDateUtil.getJavaDate(d, us);
+                    if (date == null) {
+                        return null;
+                    }
+                    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()).toLocalDate();
+                }
+            }
             if (Date.class.equals(field.getType())) {
                 if (value.contains("-") || value.contains("/") || value.contains(":")) {
                     return getSimpleDateFormatDate(value, format);
@@ -82,7 +110,7 @@ public class TypeUtil {
             if (BigDecimal.class.equals(field.getType())) {
                 return new BigDecimal(value);
             }
-            if(String.class.equals(field.getType())){
+            if (String.class.equals(field.getType())) {
                 return formatFloat(value);
             }
 
@@ -113,11 +141,11 @@ public class TypeUtil {
 
     public static Boolean isNum(Object cellValue) {
         if (cellValue instanceof Integer
-            || cellValue instanceof Double
-            || cellValue instanceof Short
-            || cellValue instanceof Long
-            || cellValue instanceof Float
-            || cellValue instanceof BigDecimal) {
+                || cellValue instanceof Double
+                || cellValue instanceof Short
+                || cellValue instanceof Long
+                || cellValue instanceof Float
+                || cellValue instanceof BigDecimal) {
             return true;
         }
         return false;
@@ -199,9 +227,9 @@ public class TypeUtil {
 
     public static String formatDate(Date cellValue, String format) {
         SimpleDateFormat simpleDateFormat;
-        if(!StringUtils.isEmpty(format)) {
-             simpleDateFormat = new SimpleDateFormat(format);
-        }else {
+        if (!StringUtils.isEmpty(format)) {
+            simpleDateFormat = new SimpleDateFormat(format);
+        } else {
             simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         }
         return simpleDateFormat.format(cellValue);
@@ -212,7 +240,11 @@ public class TypeUtil {
         Object value = beanMap.get(fieldName);
         if (value != null) {
             if (value instanceof Date) {
-                cellValue = TypeUtil.formatDate((Date)value, format);
+                cellValue = TypeUtil.formatDate((Date) value, format);
+            } else if (value instanceof LocalDateTime) {
+                cellValue = ((LocalDateTime) value).format(DateTimeFormatter.ofPattern(format));
+            } else if (value instanceof LocalDate) {
+                cellValue = ((LocalDate) value).format(DateTimeFormatter.ofPattern(format));
             } else {
                 cellValue = value.toString();
             }
@@ -226,9 +258,9 @@ public class TypeUtil {
             ExcelColumnProperty columnProperty = excelHeadProperty.getExcelColumnProperty(i);
             if (columnProperty != null) {
                 Object value = TypeUtil.convert(stringList.get(i), columnProperty.getField(),
-                    columnProperty.getFormat(), use1904WindowDate);
+                        columnProperty.getFormat(), use1904WindowDate);
                 if (value != null) {
-                    map.put(columnProperty.getField().getName(),value);
+                    map.put(columnProperty.getField().getName(), value);
                 }
             }
         }

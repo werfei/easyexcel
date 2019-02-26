@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.alibaba</groupId>
     <artifactId>easyexcel</artifactId>
-    <version>1.1.2-beta5</version>
+    <version>1.1.2-casmart</version>
     <packaging>jar</packaging>
     <name>easyexcel</name>
 
@@ -17,7 +17,9 @@
     <properties>
         <!--<gpg.skip>true</gpg.skip>-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jdk.version>1.7</jdk.version>
+        <jdk.version>1.8</jdk.version>
+        <skipTests>true</skipTests>
+        <maven.test.skip>true</maven.test.skip>
     </properties>
 
     <scm>
